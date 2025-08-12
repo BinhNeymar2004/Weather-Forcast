@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+    <title>Tìm kiếm dữ liệu môi trường</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9fbfc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            color: #34495e;
+            margin-right: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            flex: 1;
+        }
+        input[type="submit"] {
+            padding: 8px 15px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #219653;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        p {
+            color: #e74c3c;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tìm kiếm dữ liệu môi trường</h1>
+    <form method="POST">
+        <label for="id">Nhập ID:</label>
+        <input type="text" id="id" name="id">
+        <input type="submit" value="Tìm kiếm">
+    </form>
+
+    {% if results %}
+    <h2>Kết quả tìm kiếm:</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Time</th>
+            <th>Temperature</th>
+            <th>Humidity</th>
+            <th>Wind</th>
+            <th>Pressure</th>
+        </tr>
+        {% for result in results %}
+        <tr>
+            <td>{{ result.ID }}</td>
+            <td>{{ result.Name }}</td>
+            <td>{{ result.time }}</td>
+            <td>{{ result.Temperature }}</td>
+            <td>{{ result.Humidity }}</td>
+            <td>{{ result.Wind }}</td>
+            <td>{{ result.Pressure }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>Không tìm thấy dữ liệu hoặc chưa nhập ID.</p>
+    {% endif %}
+</body>
+</html>

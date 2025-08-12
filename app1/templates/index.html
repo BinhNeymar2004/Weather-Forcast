@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nhập dữ liệu môi trường</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f4f7f6;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+            color: #34495e;
+        }
+        input[type="text"],
+        input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+<body>
+    <h2>Nhập thông tin môi trường</h2>
+    <form method="POST">
+        <div class="input-group">
+            <label for="id">ID:</label>
+            <input type="text" id="id" name="id" required>
+        </div>
+        <div class="input-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div class="input-group">
+            <label for="temperature">Temperature (°C):</label>
+            <input type="number" id="temperature" step="0.1" name="temperature" required>
+        </div>
+        <div class="input-group">
+            <label for="humidity">Humidity (%):</label>
+            <input type="number" id="humidity" step="0.1" name="humidity" required>
+        </div>
+        <div class="input-group">
+            <label for="wind">Wind (m/s):</label>
+            <input type="number" id="wind" step="0.1" name="wind" required>
+        </div>
+        <div class="input-group">
+            <label for="pressure">Pressure (hPa):</label>
+            <input type="number" id="pressure" step="0.1" name="pressure" required>
+        </div>
+        <button type="submit">Lưu</button>
+    </form>
+</body>
+</html>
