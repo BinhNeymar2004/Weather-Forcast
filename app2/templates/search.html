@@ -72,8 +72,15 @@
     <h1>Tìm kiếm dữ liệu môi trường</h1>
     <form method="POST">
         <label for="id">Nhập ID:</label>
-        <input type="text" id="id" name="id">
-        <input type="submit" value="Tìm kiếm">
+        <input type="text" name="id" placeholder="Nhập ID">
+
+        <label for="start_date">Từ ngày:</label>
+        <input type="date" name="start_date">
+
+        <label for="end_date">Đến ngày:</label>
+        <input type="date" name="end_date">
+
+        <button type="submit">Tìm kiếm</button>
     </form>
 
     {% if results %}
@@ -92,7 +99,7 @@
         <tr>
             <td>{{ result.ID }}</td>
             <td>{{ result.Name }}</td>
-            <td>{{ result.time }}</td>
+            <td>{{ result.Time }}</td>
             <td>{{ result.Temperature }}</td>
             <td>{{ result.Humidity }}</td>
             <td>{{ result.Wind }}</td>

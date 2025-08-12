@@ -19,25 +19,41 @@ def index():
     results = []
     if request.method == "POST":
         search_id = request.form.get("id", "").strip()
+        start_date = request.form.get("start_date", "").strip()
+        end_date = request.form.get("end_date", "").strip()
 
+        # Tạo query ban đầu
+        query = db.collection("EnvironmentData")
+
+        # Nếu có ID thì lọc theo ID
         if search_id:
-            docs = (
-                db.collection("EnvironmentData")
-                .where("ID", "==", search_id)
-                .stream()
-            )
+            query = query.where("ID", "==", search_id)
 
-            for doc in docs:
-                data = doc.to_dict()
+        # Nếu có khoảng ngày thì lọc thêm
+        if start_date and end_date:
+            try:
+                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+                # end_dt tăng thêm 1 ngày để lấy hết dữ liệu trong ngày cuối
+                end_dt = end_dt.replace(hour=23, minute=59, second=59)
 
-                # Chuyển Firestore Timestamp thành string
-                ts = data.get("time")
-                if hasattr(ts, "strftime"):  # datetime
-                    data["time"] = ts.strftime("%Y-%m-%d %H:%M:%S")
-                elif hasattr(ts, "to_datetime"):  # Firestore timestamp object
-                    data["time"] = ts.to_datetime().strftime("%Y-%m-%d %H:%M:%S")
+                query = query.where("time", ">=", start_dt).where("time", "<=", end_dt)
+            except ValueError:
+                pass  # Nếu nhập sai định dạng ngày thì bỏ qua
 
-                results.append(data)
+        # Lấy dữ liệu từ Firestore
+        docs = query.stream()
+        for doc in docs:
+            data = doc.to_dict()
+
+            # Chuyển Firestore Timestamp thành string
+            ts = data.get("time")
+            if hasattr(ts, "strftime"):  # datetime
+                data["time"] = ts.strftime("%Y-%m-%d %H:%M:%S")
+            elif hasattr(ts, "to_datetime"):  # Firestore timestamp object
+                data["time"] = ts.to_datetime().strftime("%Y-%m-%d %H:%M:%S")
+
+            results.append(data)
 
     return render_template("search.html", results=results)
 
