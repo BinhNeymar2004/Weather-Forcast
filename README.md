@@ -37,4 +37,7 @@ Dữ liệu được lấy theo thời gian thực.
 App1:
 <img width="1864" height="913" alt="image" src="https://github.com/user-attachments/assets/90883ac3-7ab0-4352-9094-2b5ea7704968" />
 App2:
-<img width="1864" height="908" alt="image" src="https://github.com/user-attachments/assets/8c1b8ad6-3ef5-47ff-ae40-583587abd128" />
+<img width="1866" height="909" alt="image" src="https://github.com/user-attachments/assets/73232115-611e-4227-9eb8-1f92c8cdad67" />
+Trang thống kê:
+<img width="1862" height="916" alt="image" src="https://github.com/user-attachments/assets/06e1411f-d8b4-4e0a-9851-c2bec40e5427" />
+
