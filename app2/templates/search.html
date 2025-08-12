@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Tìm kiếm dữ liệu môi trường</title>
+    <title>Quản lý dữ liệu môi trường</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,22 +16,30 @@
             color: #2c3e50;
             text-align: center;
         }
-        form {
+        .form-section {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         label {
             font-weight: bold;
             color: #34495e;
             margin-right: 10px;
         }
-        input[type="text"] {
+        input[type="text"],
+        input[type="date"] {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 16px;
             flex: 1;
+            min-width: 150px;
         }
         input[type="submit"] {
             padding: 8px 15px;
@@ -66,49 +74,133 @@
             color: #e74c3c;
             text-align: center;
         }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            padding: 10px 20px;
+            margin-right: 5px;
+            background-color: #ecf0f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tab-button:hover, .tab-button.active {
+            background-color: #3498db;
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <h1>Tìm kiếm dữ liệu môi trường</h1>
-    <form method="POST">
-        <label for="id">Nhập ID:</label>
-        <input type="text" name="id" placeholder="Nhập ID">
+    <h1>Quản lý dữ liệu môi trường</h1>
 
-        <label for="start_date">Từ ngày:</label>
-        <input type="date" name="start_date">
+    <!-- Tab điều hướng -->
+    <div class="flex justify-center mb-4">
+        <button class="tab-button active" onclick="openTab('search')">Tìm kiếm</button>
+        <button class="tab-button" onclick="openTab('stats')">Thống kê</button>
+    </div>
 
-        <label for="end_date">Đến ngày:</label>
-        <input type="date" name="end_date">
+    <!-- Form và nội dung -->
+    <div id="search-tab" class="tab-content active">
+        <form method="POST">
+            <input type="hidden" name="action" value="search">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="id">Nhập ID:</label>
+                    <input type="text" id="id" name="id">
+                </div>
+                <input type="submit" value="Tìm kiếm">
+            </div>
+        </form>
 
-        <button type="submit">Tìm kiếm</button>
-    </form>
+        {% if search_results %}
+        <h2>Kết quả tìm kiếm:</h2>
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Time</th>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Wind</th>
+                <th>Pressure</th>
+            </tr>
+            {% for result in search_results %}
+            <tr>
+                <td>{{ result.ID }}</td>
+                <td>{{ result.Name }}</td>
+                <td>{{ result.Time }}</td>
+                <td>{{ result.Temperature }}</td>
+                <td>{{ result.Humidity }}</td>
+                <td>{{ result.Wind }}</td>
+                <td>{{ result.Pressure }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>Không tìm thấy dữ liệu hoặc chưa nhập ID.</p>
+        {% endif %}
+    </div>
 
-    {% if results %}
-    <h2>Kết quả tìm kiếm:</h2>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Time</th>
-            <th>Temperature</th>
-            <th>Humidity</th>
-            <th>Wind</th>
-            <th>Pressure</th>
-        </tr>
-        {% for result in results %}
-        <tr>
-            <td>{{ result.ID }}</td>
-            <td>{{ result.Name }}</td>
-            <td>{{ result.Time }}</td>
-            <td>{{ result.Temperature }}</td>
-            <td>{{ result.Humidity }}</td>
-            <td>{{ result.Wind }}</td>
-            <td>{{ result.Pressure }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>Không tìm thấy dữ liệu hoặc chưa nhập ID.</p>
-    {% endif %}
+    <div id="stats-tab" class="tab-content">
+        <form method="POST">
+            <input type="hidden" name="action" value="stats">
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="start_date">Từ ngày:</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label for="end_date">Đến ngày:</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+                <input type="submit" value="Thống kê">
+            </div>
+        </form>
+
+        {% if stats %}
+        <h2>Kết quả thống kê:</h2>
+        <table border="1">
+            <tr>
+                <th>Tham số</th>
+                <th>Trung bình</th>
+                <th>Giá trị max</th>
+                <th>Giá trị min</th>
+            </tr>
+            {% for param, values in stats.items() %}
+            <tr>
+                <td>{{ param }}</td>
+                <td>{{ "%.2f"|format(values.mean) if values.mean is not none else "N/A" }}</td>
+                <td>{{ "%.2f"|format(values.max) if values.max is not none else "N/A" }}</td>
+                <td>{{ "%.2f"|format(values.min) if values.min is not none else "N/A" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p>Không có dữ liệu để thống kê hoặc chưa chọn khoảng thời gian.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function openTab(tabName) {
+            // Ẩn tất cả tab content
+            var tabs = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            // Bỏ active khỏi tất cả tab button
+            var buttons = document.getElementsByClassName("tab-button");
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove("active");
+            }
+            // Hiển thị tab được chọn
+            document.getElementById(tabName + "-tab").classList.add("active");
+            event.currentTarget.classList.add("active");
+        }
+    </script>
 </body>
 </html>

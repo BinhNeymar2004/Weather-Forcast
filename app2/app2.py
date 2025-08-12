@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import firebase_admin
 from firebase_admin import credentials, firestore
 from datetime import datetime
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -16,46 +17,70 @@ db = firestore.client()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    results = []
+    search_results = []
+    stats_data = {}
+    
     if request.method == "POST":
-        search_id = request.form.get("id", "").strip()
-        start_date = request.form.get("start_date", "").strip()
-        end_date = request.form.get("end_date", "").strip()
+        action = request.form.get("action", "search")  # Mặc định là "search"
+        
+        if action == "search":
+            search_id = request.form.get("id", "").strip()
+            if search_id:
+                docs = (
+                    db.collection("EnvironmentData")
+                    .where("ID", "==", search_id)
+                    .stream()
+                )
+                for doc in docs:
+                    data = doc.to_dict()
+                    # Chuyển Firestore Timestamp thành string
+                    ts = data.get("Time")
+                    if hasattr(ts, "strftime"):  # datetime
+                        data["Time"] = ts.strftime("%Y-%m-%d %H:%M:%S")
+                    elif hasattr(ts, "to_datetime"):  # Firestore timestamp object
+                        data["Time"] = ts.to_datetime().strftime("%Y-%m-%d %H:%M:%S")
+                    search_results.append(data)
+        
+        elif action == "stats":
+            start_date = request.form.get("start_date", "").strip()
+            end_date = request.form.get("end_date", "").strip()
+            query = db.collection("EnvironmentData")
+            if start_date and end_date:
+                try:
+                    start_dt = datetime.strptime(start_date, "%Y-%m-%d")
+                    end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+                    end_dt = end_dt.replace(hour=23, minute=59, second=59)
+                    query = query.where("time", ">=", start_dt).where("Time", "<=", end_dt)
+                except ValueError:
+                    pass  # Nếu nhập sai định dạng ngày thì bỏ qua
+            docs = query.stream()
+            data_list = [doc.to_dict() for doc in docs]
+            if data_list:
+                df = pd.DataFrame(data_list)
+                stats_data = {
+                    "Temperature": {
+                        "mean": df["Temperature"].mean(),
+                        "max": df["Temperature"].max(),
+                        "min": df["Temperature"].min(),
+                    },
+                    "Humidity": {
+                        "mean": df["Humidity"].mean(),
+                        "max": df["Humidity"].max(),
+                        "min": df["Humidity"].min(),
+                    },
+                    "Wind": {
+                        "mean": df["Wind"].mean(),
+                        "max": df["Wind"].max(),
+                        "min": df["Wind"].min(),
+                    },
+                    "Pressure": {
+                        "mean": df["Pressure"].mean(),
+                        "max": df["Pressure"].max(),
+                        "min": df["Pressure"].min(),
+                    }
+                }
 
-        # Tạo query ban đầu
-        query = db.collection("EnvironmentData")
-
-        # Nếu có ID thì lọc theo ID
-        if search_id:
-            query = query.where("ID", "==", search_id)
-
-        # Nếu có khoảng ngày thì lọc thêm
-        if start_date and end_date:
-            try:
-                start_dt = datetime.strptime(start_date, "%Y-%m-%d")
-                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
-                # end_dt tăng thêm 1 ngày để lấy hết dữ liệu trong ngày cuối
-                end_dt = end_dt.replace(hour=23, minute=59, second=59)
-
-                query = query.where("time", ">=", start_dt).where("time", "<=", end_dt)
-            except ValueError:
-                pass  # Nếu nhập sai định dạng ngày thì bỏ qua
-
-        # Lấy dữ liệu từ Firestore
-        docs = query.stream()
-        for doc in docs:
-            data = doc.to_dict()
-
-            # Chuyển Firestore Timestamp thành string
-            ts = data.get("time")
-            if hasattr(ts, "strftime"):  # datetime
-                data["time"] = ts.strftime("%Y-%m-%d %H:%M:%S")
-            elif hasattr(ts, "to_datetime"):  # Firestore timestamp object
-                data["time"] = ts.to_datetime().strftime("%Y-%m-%d %H:%M:%S")
-
-            results.append(data)
-
-    return render_template("search.html", results=results)
+    return render_template("search.html", search_results=search_results, stats=stats_data)
 
 if __name__ == "__main__":
     app.run(port=5002, debug=True)
